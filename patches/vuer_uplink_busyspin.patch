@@ -1,0 +1,14 @@
+--- /home/jindong/miniforge3/envs/tv/lib/python3.10/site-packages/vuer/server.py.bak_20260812	2026-08-12 11:34:58.564469275 +0900
++++ /home/jindong/miniforge3/envs/tv/lib/python3.10/site-packages/vuer/server.py	2026-08-12 11:34:58.573469536 +0900
+@@ -1122,7 +1122,10 @@
+           raise e
+           break
+       else:
+-        await sleep(0.0)
++        # [BLLIC 2026-08-12] busy-spin fix: sleep(0.0)은 이벤트루프에 양보만 하고 즉시 재실행돼
++        # 유휴 uplink가 코어 1개를 100% 점유했다 (py-spy 실측). 큐가 비었을 때만 2ms 대기.
++        # 큐에 메시지가 있으면 슬립 없이 연속 송신하므로 처리량 영향 0. 원본: server.py.bak_20260812
++        await sleep(0.002)
+ 
+   async def downlink(self, request: Request, ws: WebSocketResponse):
+     """
